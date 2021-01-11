@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<odoo>
+
+    <!-- tree view of the patient model-->
+     <record id="appointment_tree" model="ir.ui.view">
+        <field name="name">hospital.appointment.tree</field>
+        <field name="model">hospital.appointment</field>
+        <field name="arch" type="xml">
+            <!--for decoration purpose(when state is in draft the decoration is info,when state is in cancel the decoration is muted -->
+            <!--# tree banner route is same as this http.route in main.py file -->
+            <tree banner_route="/om_hospital/appointments" decoration-info="state == 'draft'"
+                   decoration-success="state == 'done'" decoration-danger="state == 'confirm'"> <!--call in 'appointment_banner' function main.py file in controller module -->
+
+                <field name="name"/>
+                <field name="patient_id"/>
+               <!-- <field name="patient_age" sum="Total Of Ages"/> -->
+                <field name="patient_age" avg="Average Of Ages"/>
+                <field name="appointment_date"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <!--timeline/grant view -->
+    <record id="appointment_timeline" model="ir.ui.view">
+        <field name="model">hospital.appointment</field>
+        <field name="type">timeline</field>
+        <field name="arch" type="xml">
+            <timeline
+                date_start="appointment_date"
+                date_stop="appointment_date_end"
+                default_group_by="doctor_id"
+                event_open_popup="true"
+                colors="#ec7063: state == 'draft'; #2ecb71: state == 'done';"
+            > <!--when state is in draft stage show one type of color,and if the stage is in done stage show another type of color -->
+                <field name="patient_id" />
+                <field name="name" />
+                <templates>
+                    <t t-name="timeline-item">
+                        <div class="o_project_timeline_item">
+
+                            <span name="display_name">
+                                <t t-esc="record.display_name" />
+                            </span>
+                            <small name="planned_hours" class="text-info ml4">
+                                <t
+                                    t-esc="field_utils.format.float_time(record.planned_hours)"
+                                />
+                            </small>
+                        </div>
+                    </t>
+                </templates>
+            </timeline>
+        </field>
+    </record>
+
+    <!--pivot view -->
+    <record id="appointment_pivot" model="ir.ui.view">
+        <field name="name">hospital.appointment.pivot</field>
+        <field name="model">hospital.appointment</field>
+        <field name="arch" type="xml">
+            <pivot string="Appointment">
+                <field name="doctor_id" type="row"/> <!--type='row' means table expand in x-axis by 'doctor_id'-->
+                <field name="appointment_date" type="col" interval="day"/> <!--'appointment_date' expand on column and the interval is 'day' -->
+            </pivot>
+
+        </field>
+    </record>
+
+    <!--calender view -->
+    <record id="appointment_calendar" model="ir.ui.view">
+        <field name="name">hospital.appointment.calendar</field>
+        <field name="model">hospital.appointment</field>
+        <field name="arch" type="xml">
+            <calendar string="Appointment Calendar" date_start="appointment_date" color="patient_id" mode="month" quick_add="False"> <!--'mode' is using for default month,by using 'quick_add' we can add a appointment by clicking a date and show a wizard form -->
+                <field name="name"/>
+                <field name="patient_id"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!--graph view -->
+    <record id="appointment_graph" model="ir.ui.view">
+        <field name="name">hospital.appointment.graph</field>
+        <field name="model">hospital.appointment</field>
+        <field name="arch" type="xml">
+            <graph string="Appointment Graph" type="pie"> <!--first show the 'pie' bar -->
+                <field name="patient_id"/>
+                <field name="amount"/>
+            </graph>
+        </field>
+    </record>
+
+
+    <!--form view of the patient model -->
+    <record id="appointment_form" model="ir.ui.view">
+        <field name="name">hospital.appointment.form</field>
+        <field name="model">hospital.appointment</field>
+        <field name="arch" type="xml">
+            <form string="Appointment">
+                <header>
+                    <button name="action_confirm" type="object" string="confirm" states="draft" class="oe_highlight" /> <!--in draft state the 'confirm' button shows -->
+                    <button name="action_notify" type="object" string="Notify" class="oe_highlight" states="draft"/> <!--'action_notify' is the function name of py file,if the states is draft then show the 'notify' button -->
+                    <button name="action_done" type="object" string="done" class="oe_highlight"
+                            attrs="{'invisible': [('state', '!=', 'confirm')]}"/> <!--in confirm state the 'done' button shows,confirm button can't shows,'state' is the database field name -->
+                    <button name="delete_lines" type="object" string="Delete" class="oe_highlight"/> <!--for delete the lines -->
+                    <button name="test_recordset" type="object" string="Record Set Operations" class="oe_highlight"/> <!--function name is 'test_recordset' -->
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirm,done"/> <!--this one is using for widget statusbar(draft,confirm,done etc),and these states shows on statusbar -->
+                </header>
+                <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name"/>
+                            </h1>
+                        </div>
+                    <group>
+                        <group>
+                            <field name="patient_id"/>
+                        </group>
+                         <group>
+                             <field name="partner_id"/>
+                             <field name="order_id"/>
+                             <field name="appointment_date"/>
+                             <field name="appointment_date_end"/>
+                             <field name="product_id"/>
+                         </group>
+                        <group>
+                             <field name="patient_age"/>
+                             <field name="amount"/>
+                            <field name="doctor_id"/>
+                            <field name="doctor_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <field name="appointment_date" options='{"datepicker": {"daysOfWeekDisabled": [0, 5, 6]}}'/> <!--disable only sunday and saturday,can't create appointment on these days-->
+                        <field name="notes"/>
+                    </group>
+
+
+                    <notebook>
+                        <page string="Doctor Prescription">
+                            <field name="appointment_lines">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/> <!-- call a variable called sequence where we can change order using drag -->
+                                    <field name="product_id"/>
+                                    <field name="product_qty"/>
+                                    <field name="appointment_id" invisible="1"/>
+
+                                </tree>
+                                <form>
+                                    <group>
+                                        <group>
+                                            <field name="product_id"/>
+                                        </group>
+                                        <group>
+                                            <field name="product_qty"/>
+
+                                        </group>
+                                    </group>
+
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Pharmacy">
+                            <field name="pharmacy_note"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter"> <!--for chatter purpose(footer) -->
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread" options="{'post_refresh': 'recipients'}"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!--for search purpose(any genre) -->
+    <!--
+    <record id="hospital_patient_search" model="ir.ui.view">
+        <field name="name">hospital.appointment.search</field>
+        <field name="model">hospital.appointment</field>
+        <field name="arch" type="xml">
+            <search string="Search Patients">
+                <field name="name" filter_domain="['|',('patient_name', 'like', self),('name_seq','like',self)]"/>
+                <field name="name_seq"/>
+                <field name="patient_name"/>
+                <separator/>
+                <filter string="Male" name="male" domain="[('gender','=', 'male')]"/>
+                <filter string="Female" name="female" domain="[('gender','=', 'fe_male')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Gender" name="gender" context="{'group_by':'gender'}"/>
+                </group>
+
+            </search>
+        </field>
+    </record>
+-->
+
+
+    <!--action of the patients menu -->
+    <record id="action_appointment" model="ir.actions.act_window">
+        <field name="name">Appointment</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">hospital.appointment</field>
+        <field name="view_mode">calendar,tree,form,graph,pivot,timeline</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create Your First Appointment !
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="patient_appointment" name="appointments" parent="hospital_root" action="action_appointment" sequence="2"/>
+</odoo>

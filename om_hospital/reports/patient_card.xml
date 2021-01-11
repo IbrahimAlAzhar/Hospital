@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+    <template id="report_patient_cards">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <h2>Patient Card</h2>
+            </t>
+        </t>
+    </template> -->
+
+    <template id="report_patient"> <!--call the report.xml file which name is report_patient -->
+
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+            <t t-foreach="docs" t-as="o"> <!--docs is call from 'patient_card.py' file -->
+                    <!-- <t t-call="om_hospital.report_patient_cards"/> -->
+                    <div class="page">
+                        <br></br>
+                        <br></br>
+                        <br></br>
+                        <div class="oe_structure"/>
+                        <div class="row">
+                            <div class="col-xs-2" style="margin:auto;">
+                            </div>
+                            <center>
+
+
+
+                                <!--for barcode purpose -->
+                                <table class="table table-bordered mb-0" style='border: 2px solid black;'>
+                                    <tr>
+                                        <td class="text-center align-middle" style="height: 6rem">
+                                            <img alt="Barcode" t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s'%('EAN13',o.name_seq , 600, 150)" style="width:100%;height:4rem;"/>
+                                            <span t-field="o.name_seq"/>
+                                        </td>
+                                    </tr>
+                                </table>
+
+
+                                <div class="col-xs-8" style="margin:auto">
+                                    <table class="table table-condensed" style="border: 3px solid black !important">
+                                        <tr>
+                                            <td width="40%">
+                                                <p style="text-align:center;padding-top:10px">
+                                                        <group> <field name='image' widget="image" class="oe_avatar" /> </group>
+                                                   <!-- <img t-if="o.image" t-att-src="data:image/png.base64,%s' % to_text(o.image)" height="120" border="1" width="120"/> -->
+                                                </p>
+                                                <p style="text-align:center;">
+                                                    <h2><strong><span t-field="o.patient_name"/></strong></h2>
+                                                </p>
+                                            </td>
+
+                                            <td width="60%">
+                                                <table>
+                                                    <tr>
+                                                        <td>
+                                                            <p style="text-align:right"> <strong>Age: </strong> </p>
+                                                            <P style="text-align:right"> <strong>Group: </strong> </P>
+                                                            <P style="text-align:right"> <strong>your Ph No: </strong> </P>
+                                                        </td>
+                                                        <td>
+                                                            <p style="text-align:left;padding-left:10px" t-field="o.patient_age"/>
+                                                            <p style="text-align:left;padding-left:10px" t-field="o.age_group"/>
+                                                            <p style="text-align:left;padding-left:10px" t-field="o.name"/>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                    <!--this table is using for to print the appoint of a current user in pdf -->
+                                    <table class="table table-condensed" style="border: 3px solid black !important">
+                                        <t t-foreach="appointment_list" t-as="app">
+                                            <tr>
+                                                <td>
+                                                    <t t-esc="app['name']"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="app['notes']"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="app['appointment_date']"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </table>
+
+                                </div>
+                            </center>
+                            </div>
+                        </div>
+
+                    <h2>Patient Card</h2>
+                Test: <t t-esc="o.name"/> <br/><!--print the name in pdf -->
+                Patient Name: <t t-esc="o.patient_name"/> <br/>
+                Age: <t t-esc="o.patient_age"/> <br/>
+
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<odoo>
+    <template id="patients_page" name="Hospital Patients"> <!--take hospital.patient model -->
+        <t t-call="website.layout">
+            <div class="container">
+                Hey I'm ibrahim al azhar
+                <table>
+                    <thead>
+                        <tr>
+                            <td>
+                                Name
+                            </td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="patients" t-as="patient">
+                            <tr>
+                                <td>
+                                    <t t-esc="patient.patient_name"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<odoo>
+<!--inherit sale order model and add a field which is 'partner_id' -->
+<record id="sale_order_inherit" model="ir.ui.view">
+    <field name="name">sale.order.inherit</field> <!--model is 'sale.order' which one we try to inherit,and we set the name is 'sale_order_inherit'  -->
+    <field name="model">sale.order</field>
+    <field name="inherit_id" ref="sale.view_order_form"/>
+    <field name="arch" type="xml">
+        <field name="partner_id" position="after">
+            <field name="patient_name"/>
+        </field>
+    </field>
+</record>
+    <!--inherit res.partner model(contact model) and make a field is required -->
+<record id="view_partner_form_inherit" model="ir.ui.view">
+    <field name="name">res.partner.inherit</field> <!--model is 'res.partner'(contacts) which one we try to inherit,and we set the name is 'res_partner_inherit'  -->
+    <field name="model">res.partner</field>
+    <field name="inherit_id" ref="base.view_partner_form"/> <!--using ref from external id in 'edit view form' -->
+    <field name="arch" type="xml">
+        <field name="mobile" position="attributes"> <!--make mobile field required -->
+            <attribute name="required">1</attribute>
+        </field>
+        <field name="email" position="attributes">
+            <attribute name="readonly">1</attribute> <!--set the email field is readonly field -->
+        </field>
+        <!-- a field name is customer(res.partner model(contacts model)) whether customer is true then 'website' field is required  -->
+        <!--
+        <field name="website" position="attributes">
+            <attribute name="attrs">{'required': [('customer', '=', True)]}</attribute>
+        </field>
+        -->
+    </field>
+</record>
+
+
+<!--we can use any field for inherit from 'sale_views.xml',which record id is 'action_orders' -->
+<record id="sale.action_orders" model="ir.actions.act_window"> <!--'sale' is the module name and 'sale_views.xml' files action is 'action_orders' -->
+    <field name="name">Appointment</field> <!--we inherit 'sale order' on 'sale' module by using its action name,we set the name is 'Appointment' -->
+</record>
+
+<!--first method suggested(for inherit sale/order/quotation and change name -->
+<!--inherit 'sale/order/quotation' and change the button name -->
+<record id="sale.menu_sale_quotations" model="ir.ui.menu"> <!--'id' is the 'XML ID' of the 'sale/order/quotation'  -->
+    <field name="name">New Quotation</field> <!--override the field 'sale/order/quotation' of 'sale_views.xml' file and set the name -->
+    <field name="sequence">100</field>
+</record>
+    <!-- second method (for inherit sale/order/quotation) and change name,this code portion copy from 'sale_view.xml' file-->
+    <!--we have to define group name(sale) before id,name,action -->
+    <!--we set the name is 'New Orders' using direct menuitem of sales module,so first method are not working here -->
+    <menuitem id="sale.menu_sale_order"
+            name="New Orders"
+            action="sale.action_orders"
+            parent="sale.sale_order_menu"
+            sequence="2" groups="sales_team.group_sale_salesman"/>
+</odoo>
